@@ -1,0 +1,103 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development and
+ * Distribution License (the License). You may not use this file except in compliance with the
+ * License.
+ *
+ * You can obtain a copy of the License at legal/CDDLv1.0.txt. See the License for the
+ * specific language governing permission and limitations under the License.
+ *
+ * When distributing Covered Software, include this CDDL Header Notice in each file and include
+ * the License file at legal/CDDLv1.0.txt. If applicable, add the following below the CDDL
+ * Header, with the fields enclosed by brackets [] replaced by your own identifying
+ * information: "Portions copyright [year] [name of copyright owner]".
+ *
+ * Copyright 2018 ForgeRock AS.
+ */
+
+
+package com.forgerock.edu.auth.nodes.cs;
+
+import com.google.inject.assistedinject.Assisted;
+import com.sun.identity.authentication.callbacks.HiddenValueCallback;
+import com.sun.identity.authentication.callbacks.ScriptTextOutputCallback;
+import com.sun.identity.shared.debug.Debug;
+import java.util.Optional;
+import org.forgerock.openam.annotations.sm.Attribute;
+import org.forgerock.openam.auth.node.api.*;
+import org.forgerock.openam.core.CoreWrapper;
+
+import javax.inject.Inject;
+import javax.security.auth.callback.Callback;
+import org.forgerock.guava.common.base.Strings;
+import org.forgerock.guava.common.collect.ImmutableList;
+import org.forgerock.json.JsonValue;
+import static org.forgerock.openam.auth.node.api.Action.send;
+import static org.forgerock.openam.auth.node.api.Action.goTo;
+
+import org.forgerock.openam.scripting.Script;
+import static org.forgerock.openam.scripting.ScriptConstants.AUTHENTICATION_CLIENT_SIDE_NAME;
+import org.forgerock.openam.scripting.service.ScriptConfiguration;
+
+/** 
+ * A node that checks to see if zero-page login headers have specified username and shared key 
+ * for this request. 
+ */
+@Node.Metadata(outcomeProvider  = SingleOutcomeNode.OutcomeProvider.class,
+               configClass      = ScriptedClientNode.Config.class)
+public class ScriptedClientNode extends SingleOutcomeNode {
+
+    private final Config config;
+    private final CoreWrapper coreWrapper;
+    private final static String DEBUG_FILE = "ScriptedClientNode";
+    protected Debug debug = Debug.getInstance(DEBUG_FILE);
+
+    /**
+     * Configuration for the node.
+     */
+    public interface Config {
+        @Attribute(order = 100)
+        @Script(AUTHENTICATION_CLIENT_SIDE_NAME)
+        ScriptConfiguration script();
+
+        @Attribute(order = 200)
+        default String scriptResult() {
+            System.out.println("[ScriptedClientNode.Config] setting scriptResult");
+            return "output";
+        }
+    }
+
+
+    /**
+     * Create the node.
+     * @param config The service config.
+     * @throws NodeProcessException If the configuration was not valid.
+     */
+    @Inject
+    public ScriptedClientNode(@Assisted Config config, CoreWrapper coreWrapper) throws NodeProcessException {
+        this.config = config;
+        this.coreWrapper = coreWrapper;
+    }
+
+    @Override
+    public Action process(TreeContext context) throws NodeProcessException {
+        Optional<String> result = context.getCallback(HiddenValueCallback.class)
+            .map(HiddenValueCallback::getValue)
+            .filter(scriptOutput -> !Strings.isNullOrEmpty(scriptOutput));
+        if (result.isPresent()) {
+            JsonValue newSharedState = context.sharedState.copy();
+            newSharedState.put(config.scriptResult(), result.get());
+            debug.message("[" + this.getClass().getSimpleName() + "]" +
+                "Client result is:\n" + result.get());
+            return goToNext().replaceSharedState(newSharedState).build();
+        } else {
+            String clientSideScript = config.script().getScript();
+            debug.message("[" + this.getClass().getSimpleName() + "] " + 
+                "Client script is:\n" + clientSideScript + "\n" +
+                "Client result name: " + config.scriptResult());
+            ScriptTextOutputCallback scriptCallback = new ScriptTextOutputCallback(clientSideScript);
+            HiddenValueCallback hiddenValueCallback = new HiddenValueCallback(config.scriptResult());
+            ImmutableList<Callback> callbacks = ImmutableList.of(scriptCallback, hiddenValueCallback);
+            return send(callbacks).build();
+        }       
+    }
+}
