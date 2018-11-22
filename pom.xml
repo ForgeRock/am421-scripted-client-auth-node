@@ -33,6 +33,10 @@
     <name>scripted-client-auth-node</name>
     <description>An Authentication Tree Node for ForgeRock's Identity Platform</description>
 
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
     <repositories>
         <repository>
             <snapshots>
