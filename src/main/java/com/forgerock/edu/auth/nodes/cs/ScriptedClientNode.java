@@ -21,22 +21,25 @@ import com.google.inject.assistedinject.Assisted;
 import com.sun.identity.authentication.callbacks.HiddenValueCallback;
 import com.sun.identity.authentication.callbacks.ScriptTextOutputCallback;
 import com.sun.identity.shared.debug.Debug;
-import java.util.Optional;
+import org.forgerock.guava.common.base.Strings;
+import org.forgerock.json.JsonValue;
 import org.forgerock.openam.annotations.sm.Attribute;
-import org.forgerock.openam.auth.node.api.*;
+import org.forgerock.openam.auth.node.api.Action;
+import org.forgerock.openam.auth.node.api.Node;
+import org.forgerock.openam.auth.node.api.NodeProcessException;
+import org.forgerock.openam.auth.node.api.SingleOutcomeNode;
+import org.forgerock.openam.auth.node.api.TreeContext;
 import org.forgerock.openam.core.CoreWrapper;
+import org.forgerock.openam.scripting.Script;
+import org.forgerock.openam.scripting.service.ScriptConfiguration;
 
 import javax.inject.Inject;
 import javax.security.auth.callback.Callback;
-import org.forgerock.guava.common.base.Strings;
-import org.forgerock.guava.common.collect.ImmutableList;
-import org.forgerock.json.JsonValue;
-import static org.forgerock.openam.auth.node.api.Action.send;
-import static org.forgerock.openam.auth.node.api.Action.goTo;
+import java.util.List;
+import java.util.Optional;
 
-import org.forgerock.openam.scripting.Script;
+import static org.forgerock.openam.auth.node.api.Action.send;
 import static org.forgerock.openam.scripting.ScriptConstants.AUTHENTICATION_CLIENT_SIDE_NAME;
-import org.forgerock.openam.scripting.service.ScriptConfiguration;
 
 /** 
  * A node that checks to see if zero-page login headers have specified username and shared key 
@@ -96,7 +99,7 @@ public class ScriptedClientNode extends SingleOutcomeNode {
                 "Client result name: " + config.scriptResult());
             ScriptTextOutputCallback scriptCallback = new ScriptTextOutputCallback(clientSideScript);
             HiddenValueCallback hiddenValueCallback = new HiddenValueCallback(config.scriptResult());
-            ImmutableList<Callback> callbacks = ImmutableList.of(scriptCallback, hiddenValueCallback);
+            List<Callback> callbacks = ImmutableList.of(scriptCallback, hiddenValueCallback);
             return send(callbacks).build();
         }       
     }
