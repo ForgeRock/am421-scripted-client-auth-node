@@ -21,7 +21,6 @@ import com.google.inject.assistedinject.Assisted;
 import com.sun.identity.authentication.callbacks.HiddenValueCallback;
 import com.sun.identity.authentication.callbacks.ScriptTextOutputCallback;
 import com.sun.identity.shared.debug.Debug;
-import org.forgerock.guava.common.base.Strings;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openam.annotations.sm.Attribute;
 import org.forgerock.openam.auth.node.api.Action;
@@ -85,7 +84,7 @@ public class ScriptedClientNode extends SingleOutcomeNode {
     public Action process(TreeContext context) throws NodeProcessException {
         Optional<String> result = context.getCallback(HiddenValueCallback.class)
             .map(HiddenValueCallback::getValue)
-            .filter(scriptOutput -> !Strings.isNullOrEmpty(scriptOutput));
+            .filter(scriptOutput -> scriptOutput != null && !scriptOutput.isEmpty());
         if (result.isPresent()) {
             JsonValue newSharedState = context.sharedState.copy();
             newSharedState.put(config.scriptResult(), result.get());
