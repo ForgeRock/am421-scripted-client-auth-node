@@ -19,23 +19,56 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-
-    <parent>
-        <artifactId>auth-tree-node-parent</artifactId>
-        <groupId>org.forgerock.am</groupId>
-        <version>6.0.0</version>
-    </parent>
-
+    
     <artifactId>scripted-client-auth-node</artifactId>
 
     <groupId>com.forgerock.edu.auth.nodes</groupId>
     <version>1.0-SNAPSHOT</version>    
     <name>scripted-client-auth-node</name>
     <description>An Authentication Tree Node for ForgeRock's Identity Platform</description>
-
-    <properties>
+    
+     <properties>
+        <am.version>6.5.2</am.version>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.forgerock.am</groupId>
+                <artifactId>openam-auth-trees</artifactId>
+                <type>pom</type>
+                <scope>import</scope>
+                <version>${am.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.forgerock.am</groupId>
+            <artifactId>auth-node-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.forgerock.am</groupId>
+            <artifactId>openam-guice-core</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.forgerock.am</groupId>
+            <artifactId>openam-core</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.forgerock.am</groupId>
+            <artifactId>openam-scripting</artifactId>
+            <version>6.5.2</version>
+            <type>jar</type>
+        </dependency>
+    </dependencies>
 
     <repositories>
         <repository>
