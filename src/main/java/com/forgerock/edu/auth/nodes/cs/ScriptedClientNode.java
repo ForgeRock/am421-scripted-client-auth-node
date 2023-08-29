@@ -14,13 +14,12 @@
  * Copyright 2018 ForgeRock AS.
  */
 
-
-package com.forgerock.edu.auth.nodes.cs;
-
+        
+        package com.forgerock.edu.auth.nodes.cs;
+        
 import com.google.inject.assistedinject.Assisted;
 import com.sun.identity.authentication.callbacks.HiddenValueCallback;
 import com.sun.identity.authentication.callbacks.ScriptTextOutputCallback;
-import com.sun.identity.shared.debug.Debug;
 import org.forgerock.json.JsonValue;
 import org.forgerock.openam.annotations.sm.Attribute;
 import org.forgerock.openam.auth.node.api.Action;
@@ -29,8 +28,10 @@ import org.forgerock.openam.auth.node.api.NodeProcessException;
 import org.forgerock.openam.auth.node.api.SingleOutcomeNode;
 import org.forgerock.openam.auth.node.api.TreeContext;
 import org.forgerock.openam.core.CoreWrapper;
-import org.forgerock.openam.scripting.Script;
-import org.forgerock.openam.scripting.service.ScriptConfiguration;
+import org.forgerock.openam.scripting.domain.Script;
+import org.forgerock.openam.scripting.persistence.config.consumer.ScriptContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.security.auth.callback.Callback;
@@ -38,28 +39,28 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.forgerock.openam.auth.node.api.Action.send;
-import static org.forgerock.openam.scripting.ScriptConstants.AUTHENTICATION_CLIENT_SIDE_NAME;
 
-/** 
- * A node that checks to see if zero-page login headers have specified username and shared key 
- * for this request. 
+/**
+ * A node that checks to see if zero-page login headers have specified username and shared key
+ * for this request.
  */
 @Node.Metadata(outcomeProvider  = SingleOutcomeNode.OutcomeProvider.class,
-               configClass      = ScriptedClientNode.Config.class)
+        configClass      = ScriptedClientNode.Config.class)
 public class ScriptedClientNode extends SingleOutcomeNode {
 
     private final Config config;
     private final CoreWrapper coreWrapper;
-    private final static String DEBUG_FILE = "ScriptedClientNode";
-    protected Debug debug = Debug.getInstance(DEBUG_FILE);
+    private final Logger logger = LoggerFactory.getLogger(ScriptedClientNode.class);
 
     /**
      * Configuration for the node.
      */
     public interface Config {
         @Attribute(order = 100)
-        @Script(AUTHENTICATION_CLIENT_SIDE_NAME)
-        ScriptConfiguration script();
+        @ScriptContext("AUTHENTICATION_TREE_DECISION_NODE")
+        default Script script() {
+            return Script.EMPTY_SCRIPT;
+        }
 
         @Attribute(order = 200)
         default String scriptResult() {
@@ -68,7 +69,7 @@ public class ScriptedClientNode extends SingleOutcomeNode {
         }
     }
 
-
+        
     /**
      * Create the node.
      * @param config The service config.
@@ -83,23 +84,23 @@ public class ScriptedClientNode extends SingleOutcomeNode {
     @Override
     public Action process(TreeContext context) throws NodeProcessException {
         Optional<String> result = context.getCallback(HiddenValueCallback.class)
-            .map(HiddenValueCallback::getValue)
-            .filter(scriptOutput -> scriptOutput != null && !scriptOutput.isEmpty());
+                .map(HiddenValueCallback::getValue)
+                .filter(scriptOutput -> scriptOutput != null && !scriptOutput.isEmpty());
         if (result.isPresent()) {
             JsonValue newSharedState = context.sharedState.copy();
             newSharedState.put(config.scriptResult(), result.get());
-            debug.message("[" + this.getClass().getSimpleName() + "]" +
-                "Client result is:\n" + result.get());
+            logger.debug("[" + this.getClass().getSimpleName() + "]" +
+                    "Client result is:\n" + result.get());
             return goToNext().replaceSharedState(newSharedState).build();
         } else {
             String clientSideScript = config.script().getScript();
-            debug.message("[" + this.getClass().getSimpleName() + "] " + 
-                "Client script is:\n" + clientSideScript + "\n" +
-                "Client result name: " + config.scriptResult());
+            logger.debug("[" + this.getClass().getSimpleName() + "] " +
+                    "Client script is:\n" + clientSideScript + "\n" +
+                    "Client result name: " + config.scriptResult());
             ScriptTextOutputCallback scriptCallback = new ScriptTextOutputCallback(clientSideScript);
             HiddenValueCallback hiddenValueCallback = new HiddenValueCallback(config.scriptResult());
             List<Callback> callbacks = ImmutableList.of(scriptCallback, hiddenValueCallback);
             return send(callbacks).build();
-        }       
+        }
     }
 }
