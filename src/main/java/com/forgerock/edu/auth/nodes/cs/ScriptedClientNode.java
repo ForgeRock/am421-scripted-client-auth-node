@@ -13,10 +13,8 @@
  *
  * Copyright 2018 ForgeRock AS.
  */
+package com.forgerock.edu.auth.nodes.cs;
 
-        
-        package com.forgerock.edu.auth.nodes.cs;
-        
 import com.google.inject.assistedinject.Assisted;
 import com.sun.identity.authentication.callbacks.HiddenValueCallback;
 import com.sun.identity.authentication.callbacks.ScriptTextOutputCallback;
@@ -40,10 +38,6 @@ import java.util.Optional;
 
 import static org.forgerock.openam.auth.node.api.Action.send;
 
-/**
- * A node that checks to see if zero-page login headers have specified username and shared key
- * for this request.
- */
 @Node.Metadata(outcomeProvider  = SingleOutcomeNode.OutcomeProvider.class,
         configClass      = ScriptedClientNode.Config.class)
 public class ScriptedClientNode extends SingleOutcomeNode {
@@ -64,12 +58,11 @@ public class ScriptedClientNode extends SingleOutcomeNode {
 
         @Attribute(order = 200)
         default String scriptResult() {
-            System.out.println("[ScriptedClientNode.Config] setting scriptResult");
             return "output";
         }
     }
 
-        
+
     /**
      * Create the node.
      * @param config The service config.
