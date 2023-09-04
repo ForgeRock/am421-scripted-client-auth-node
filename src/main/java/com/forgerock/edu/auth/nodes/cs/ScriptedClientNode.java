@@ -51,7 +51,7 @@ public class ScriptedClientNode extends SingleOutcomeNode {
      */
     public interface Config {
         @Attribute(order = 100)
-        @ScriptContext("AUTHENTICATION_TREE_DECISION_NODE")
+        @ScriptContext("AUTHENTICATION_CLIENT_SIDE_NAME")
         default Script script() {
             return Script.EMPTY_SCRIPT;
         }

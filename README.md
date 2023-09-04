@@ -15,18 +15,19 @@
 -->
 # ClientSideJScript
 
-A simple authentication node for ForgeRock's [Identity Platform][forgerock_platform] 5.5 and above. This node... **SHORT DESCRIPTION HERE**
+A simple authentication node for ForgeRock's [Identity Platform][forgerock_platform] 7.3.0. This node implements client-side scripting (that used to exists with the Scripted Module).
 
+Originally from the Backstage Marketplace, this node has been updated for AM 7.3.0 and slightly modified for the purposes of the AM-421 (Rev. B.3) ForgeRock University class.
 
 Copy the .jar file from the ../target directory into the ../web-container/webapps/openam/WEB-INF/lib directory where AM is deployed.  Restart the web container to pick up the new node.  The node will then appear in the authentication trees components palette.
 
 
 **USAGE HERE**
 
+Place the node on an authentication tree and then configure it by selecting a script. The script has to be created as a Client-side Authentication script in JavaScript.
 
-The code in this repository has binary dependencies that live in the ForgeRock maven repository. Maven can be configured to authenticate to this repository by following the following [ForgeRock Knowledge Base Article](https://backstage.forgerock.com/knowledge/kb/article/a74096897).
 
-**SPECIFIC BUILD INSTRUCTIONS HERE**
+The code in this repository has binary dependencies that live in the ForgeRock maven repository. Maven have to be configured to authenticate to this repository. See [https://backstage.forgerock.com/knowledge/kb/article/a74096897](https://backstage.forgerock.com/knowledge/kb/article/a74096897)
 
 **SCREENSHOTS ARE GOOD LIKE BELOW**
 
