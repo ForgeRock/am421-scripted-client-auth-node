@@ -45,13 +45,14 @@ public class ScriptedClientNode extends SingleOutcomeNode {
     private final Config config;
     private final CoreWrapper coreWrapper;
     private final Logger logger = LoggerFactory.getLogger(ScriptedClientNode.class);
+    public static final String AUTHENTICATION_CLIENT_SIDE_NAME = "AUTHENTICATION_CLIENT_SIDE";
 
     /**
      * Configuration for the node.
      */
     public interface Config {
         @Attribute(order = 100)
-        @ScriptContext("AUTHENTICATION_CLIENT_SIDE_NAME")
+        @ScriptContext(AUTHENTICATION_CLIENT_SIDE_NAME)
         default Script script() {
             return Script.EMPTY_SCRIPT;
         }
